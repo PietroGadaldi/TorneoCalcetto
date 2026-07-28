@@ -17,24 +17,28 @@ function ResultForm({ match, teamName, onSave, busy }) {
         onSave(Number(home), Number(away))
       }}
     >
-      <span>{teamName(match.home_team_id)}</span>
+      <span className="score-team">{teamName(match.home_team_id)}</span>
       <input
+        className="score-input"
         type="number"
         min="0"
         required
         value={home}
         onChange={(e) => setHome(e.target.value)}
       />
-      <span>–</span>
+      <span className="score-sep" aria-hidden="true">
+        –
+      </span>
       <input
+        className="score-input score-input-away"
         type="number"
         min="0"
         required
         value={away}
         onChange={(e) => setAway(e.target.value)}
       />
-      <span>{teamName(match.away_team_id)}</span>
-      <button type="submit" className="btn btn-secondary btn-sm" disabled={busy}>
+      <span className="score-team score-team-away">{teamName(match.away_team_id)}</span>
+      <button type="submit" className="btn btn-secondary btn-sm score-submit" disabled={busy}>
         {match.status === 'played' ? 'Aggiorna' : 'Registra'}
       </button>
     </form>
@@ -136,7 +140,7 @@ export default function Matches() {
         </form>
       )}
 
-      <div className="panel">
+      <div className="panel list-panel">
         {groupMatches.length === 0 && <p className="text-dim">Nessuna partita creata.</p>}
         <ul className="match-list">
           {groupMatches.map((m) => (
@@ -150,11 +154,15 @@ export default function Matches() {
                 />
               ) : (
                 <div className="score-form">
-                  <span>{teamName(m.home_team_id)}</span>
-                  <strong>{m.status === 'played' ? m.home_goals : '–'}</strong>
-                  <span>–</span>
-                  <strong>{m.status === 'played' ? m.away_goals : '–'}</strong>
-                  <span>{teamName(m.away_team_id)}</span>
+                  <span className="score-team">{teamName(m.home_team_id)}</span>
+                  <strong className="score-input">{m.status === 'played' ? m.home_goals : '–'}</strong>
+                  <span className="score-sep" aria-hidden="true">
+                    –
+                  </span>
+                  <strong className="score-input score-input-away">
+                    {m.status === 'played' ? m.away_goals : '–'}
+                  </strong>
+                  <span className="score-team score-team-away">{teamName(m.away_team_id)}</span>
                 </div>
               )}
             </li>

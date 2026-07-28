@@ -88,7 +88,7 @@ export default function Overview() {
       </div>
 
       {staff && (
-        <div className="panel">
+        <div className="panel tool-panel">
           <h2>Strumenti Host / Admin</h2>
 
           <div className="overview-tool">

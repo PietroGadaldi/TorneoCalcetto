@@ -206,6 +206,8 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: clamp(18px, 3vw, 28px) clamp(20px, 4vw, 34px) 0;
 }
 
@@ -213,11 +215,13 @@ p {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   color: var(--text-h);
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: clamp(17px, 4vw, 19px);
   font-weight: 600;
   letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
 }
 
 .brand-mark {
@@ -225,6 +229,7 @@ p {
   place-items: center;
   width: 34px;
   height: 34px;
+  flex-shrink: 0;
   border-radius: 10px;
   background: linear-gradient(180deg, var(--pitch-light) 0%, var(--pitch) 100%);
   border: 1px solid var(--panel-border);
@@ -417,11 +422,20 @@ p {
   overflow-x: auto;
 }
 
+.standings {
+  -webkit-overflow-scrolling: touch;
+}
+
 .standings table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  min-width: 420px;
+  /* 9 colonne (G V N P GF GS DR Pt + nome): sotto questa soglia si accavallano */
+  min-width: 540px;
+}
+
+.standings td.team {
+  white-space: nowrap;
 }
 
 .standings th,
@@ -667,9 +681,19 @@ select {
 .topbar-user {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   font-size: 14px;
   color: var(--text-dim);
+}
+
+/* il nome utente cede spazio prima del badge e del bottone Esci */
+.topbar-user > span:not(.badge) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 22ch;
 }
 
 .tabs {
@@ -747,9 +771,18 @@ select {
   transform: translateY(-1px);
 }
 
+.tournament-list-item > div {
+  min-width: 0;
+}
+
+.tournament-list-item svg {
+  flex-shrink: 0;
+}
+
 .tournament-list-item strong {
   display: block;
   color: var(--text-h);
+  overflow-wrap: anywhere;
 }
 
 .tournament-list-item span {
@@ -825,14 +858,44 @@ select {
   letter-spacing: 0.06em;
 }
 
+/* I .panel non hanno padding proprio: le pagine che ci mettono dentro testo
+   o liste devono dichiararlo, altrimenti il contenuto tocca il bordo. */
+.tool-panel,
+.list-panel {
+  padding: clamp(16px, 4vw, 24px);
+}
+
+.tool-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.tool-panel h2 {
+  font-size: clamp(18px, 3vw, 21px);
+}
+
 .overview-tool {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   padding: 16px 0;
+  margin-top: 16px;
   border-top: 1px solid var(--panel-border-soft);
   flex-wrap: wrap;
+}
+
+.overview-tool > div {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+/* sotto i 560px il bottone d'azione va a capo: meglio a piena larghezza
+   che schiacciato in un angolo */
+@media (max-width: 560px) {
+  .overview-tool > .btn {
+    width: 100%;
+  }
 }
 
 .overview-tool h3 {
@@ -873,10 +936,18 @@ select {
    TABELLE DI GESTIONE (lobby, tabellone) — stessa lingua visiva di .standings
    ========================================================================== */
 
+/* .page ha overflow-x:hidden, quindi una tabella larga verrebbe tagliata e le
+   sue azioni resterebbero irraggiungibili: lo scroll va confinato qui. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  min-width: 520px;
 }
 
 .table th,
@@ -924,7 +995,7 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px 28px;
-  padding: 20px;
+  padding: clamp(16px, 4vw, 20px);
 }
 
 .inline-form {
@@ -932,11 +1003,29 @@ select {
   align-items: flex-end;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 18px;
+  padding: clamp(16px, 4vw, 18px);
+}
+
+/* dentro .two-col-forms il padding è già del contenitore */
+.two-col-forms .inline-form {
+  padding: 0;
 }
 
 .inline-form .field {
   flex: 1 1 160px;
+  min-width: 0;
+}
+
+/* sotto i 480px un form in linea non sta più in linea: meglio impilarlo
+   che lasciare campi da 60px */
+@media (max-width: 480px) {
+  .inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .inline-form .btn {
+    width: 100%;
+  }
 }
 
 .teams-grid {
@@ -968,9 +1057,23 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
   font-size: 14px;
   padding: 8px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* un nome lungo non deve spingere fuori il menu "Sposta in…" */
+.roster-list li > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.roster-list li > select,
+.roster-list li > .btn {
+  flex-shrink: 0;
+  max-width: 100%;
 }
 
 .roster-list li:last-child {
@@ -991,7 +1094,7 @@ select {
 }
 
 .match-row {
-  padding: 12px 4px;
+  padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -999,22 +1102,35 @@ select {
   border-bottom: none;
 }
 
+/* Desktop: casa – punteggio – trasferta su una riga sola.
+   Le due colonne dei nomi sono 1fr, così restano simmetriche
+   qualunque sia la lunghezza dei nomi delle squadre. */
 .score-form {
-  display: flex;
+  display: grid;
+  /* il bottone (solo per lo staff) finisce in una sesta colonna implicita,
+     così la vista in sola lettura non si porta dietro una traccia vuota */
+  grid-template-columns: 1fr auto auto auto 1fr;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
   font-size: 14px;
 }
 
-.score-form span:first-child,
-.score-form span:nth-child(4) {
-  min-width: 120px;
+.score-team {
+  min-width: 0;
   color: var(--text-h);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
-.score-form input {
+.score-team-away {
+  text-align: right;
+}
+
+.score-sep {
+  color: var(--text-dim);
+}
+
+input.score-input {
   width: 52px;
   font: inherit;
   text-align: center;
@@ -1025,10 +1141,40 @@ select {
   padding: 6px 4px;
 }
 
-.score-form strong {
+strong.score-input {
   color: var(--gold);
-  min-width: 20px;
+  min-width: 24px;
   text-align: center;
+}
+
+/* Mobile: due righe "squadra → punteggio", con il bottone a piena larghezza.
+   L'ordine visivo va riordinato perché nel markup i due input sono adiacenti. */
+@media (max-width: 640px) {
+  .score-form {
+    grid-template-columns: 1fr auto;
+    gap: 10px 12px;
+  }
+  .score-sep {
+    display: none;
+  }
+  .score-team {
+    order: 1;
+  }
+  .score-input {
+    order: 2;
+  }
+  .score-team-away {
+    order: 3;
+    text-align: left;
+  }
+  .score-input-away {
+    order: 4;
+  }
+  .score-submit {
+    order: 5;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
 }
 
 /* ==========================================================================
@@ -1086,9 +1232,12 @@ select {
 .bracket-row span {
   color: var(--text-h);
   font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .bracket-row input {
+  flex-shrink: 0;
   width: 56px;
   font: inherit;
   text-align: center;
@@ -1143,7 +1292,9 @@ select {
 
 .modal {
   width: min(380px, 100%);
-  padding: 24px;
+  max-height: calc(100svh - 40px);
+  overflow-y: auto;
+  padding: clamp(20px, 5vw, 24px);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -1151,6 +1302,7 @@ select {
 
 .modal h3 {
   font-size: 18px;
+  overflow-wrap: anywhere;
 }
 
 .modal p {
@@ -1163,4 +1315,65 @@ select {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+/* su schermi stretti i due bottoni della modale diventano a piena larghezza,
+   con la conferma in cima per restare sotto il pollice */
+@media (max-width: 420px) {
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+  .modal-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   ADATTAMENTO MOBILE TRASVERSALE
+   ========================================================================== */
+
+/* iOS Safari zooma automaticamente su ogni campo con font-size < 16px:
+   sotto la soglia touch i controlli passano a 16px per evitarlo. */
+@media (max-width: 640px) {
+  .field input,
+  .field select,
+  select,
+  .score-form input,
+  .bracket-row input {
+    font-size: 16px;
+  }
+
+  /* bersagli touch: .btn-sm a 8px di padding sta sotto i 40px di altezza */
+  .btn-sm {
+    padding: 10px 14px;
+    min-height: 40px;
+  }
+
+  .tabs {
+    gap: 0;
+  }
+
+  .tab {
+    padding: 10px 12px;
+  }
+
+  /* tabelle: meno respiro orizzontale, così scorrono meno */
+  .table th,
+  .table td,
+  .standings th,
+  .standings td {
+    padding: 10px 9px;
+  }
+}
+
+/* La barra dei tab scorre in orizzontale: su touch va nascosta la scrollbar
+   ma mantenuto lo slancio nativo. */
+.tabs {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }

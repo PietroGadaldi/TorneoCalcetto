@@ -50,7 +50,7 @@ export default function Lobby() {
 
       <Alert>{error}</Alert>
 
-      <div className="panel">
+      <div className="panel table-scroll">
         <table className="table">
           <thead>
             <tr>
