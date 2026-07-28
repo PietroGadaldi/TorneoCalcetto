@@ -2,19 +2,25 @@
 -- Torneo Calcetto — schema Supabase (Postgres)
 -- Da eseguire sul progetto Supabase collegato al frontend (SQL editor o CLI).
 -- Riferimento di progetto: vedi CLAUDE.md e il piano di implementazione.
+--
+-- Idempotente: rilanciare l'intero file su un database già provisionato
+-- (es. dopo una modifica a una singola funzione) non genera errori
+-- "already exists" — tabelle/indici usano IF NOT EXISTS, trigger e policy
+-- vengono droppati e ricreati, la publication realtime salta le tabelle
+-- già aggiunte.
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
 -- 1. TABELLE
 -- -----------------------------------------------------------------------------
 
-create table public.profiles (
+create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   username text not null unique,
   created_at timestamptz not null default now()
 );
 
-create table public.tournaments (
+create table if not exists public.tournaments (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   host_id uuid not null references public.profiles (id),
@@ -25,7 +31,7 @@ create table public.tournaments (
   created_at timestamptz not null default now()
 );
 
-create table public.tournament_members (
+create table if not exists public.tournament_members (
   id uuid primary key default gen_random_uuid(),
   tournament_id uuid not null references public.tournaments (id) on delete cascade,
   user_id uuid not null references public.profiles (id),
@@ -34,9 +40,9 @@ create table public.tournament_members (
   created_at timestamptz not null default now(),
   unique (tournament_id, user_id)
 );
-create index tournament_members_tournament_idx on public.tournament_members (tournament_id);
+create index if not exists tournament_members_tournament_idx on public.tournament_members (tournament_id);
 
-create table public.teams (
+create table if not exists public.teams (
   id uuid primary key default gen_random_uuid(),
   tournament_id uuid not null references public.tournaments (id) on delete cascade,
   name text not null,
@@ -45,12 +51,12 @@ create table public.teams (
   unique (tournament_id, name),
   unique (tournament_id, group_seed)
 );
-create index teams_tournament_idx on public.teams (tournament_id);
+create index if not exists teams_tournament_idx on public.teams (tournament_id);
 
 -- Rosa: una riga per ogni persona associata al torneo, registrata o ospite.
 -- Disaccoppiata da tournament_members per permettere giocatori "segnaposto"
 -- senza account (guest_name) accanto ai Giocatori registrati (member_id).
-create table public.players (
+create table if not exists public.players (
   id uuid primary key default gen_random_uuid(),
   tournament_id uuid not null references public.tournaments (id) on delete cascade,
   member_id uuid null references public.tournament_members (id) on delete cascade,
@@ -60,10 +66,10 @@ create table public.players (
   check (num_nonnulls(member_id, guest_name) = 1),
   unique (tournament_id, member_id)
 );
-create index players_tournament_idx on public.players (tournament_id);
-create index players_team_idx on public.players (team_id);
+create index if not exists players_tournament_idx on public.players (tournament_id);
+create index if not exists players_team_idx on public.players (team_id);
 
-create table public.matches (
+create table if not exists public.matches (
   id uuid primary key default gen_random_uuid(),
   tournament_id uuid not null references public.tournaments (id) on delete cascade,
   phase text not null check (phase in ('group', 'playoff', 'semifinal', 'final')),
@@ -83,14 +89,14 @@ create table public.matches (
     greatest(home_team_id::text, away_team_id::text)
   ) stored
 );
-create index matches_tournament_idx on public.matches (tournament_id);
+create index if not exists matches_tournament_idx on public.matches (tournament_id);
 
 -- Un solo scontro per coppia di squadre nel girone (15 partite per 6 squadre)
-create unique index matches_group_pair_uidx
+create unique index if not exists matches_group_pair_uidx
   on public.matches (tournament_id, pair_key) where phase = 'group';
 
 -- Un solo match per slot del tabellone a eliminazione diretta
-create unique index matches_slot_uidx
+create unique index if not exists matches_slot_uidx
   on public.matches (tournament_id, slot) where slot is not null;
 
 -- -----------------------------------------------------------------------------
@@ -192,6 +198,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
@@ -211,6 +218,7 @@ begin
 end;
 $$;
 
+drop trigger if exists teams_limit_trigger on public.teams;
 create trigger teams_limit_trigger
   before insert on public.teams
   for each row execute function public.check_team_limit();
@@ -247,6 +255,7 @@ begin
 end;
 $$;
 
+drop trigger if exists matches_validate_trigger on public.matches;
 create trigger matches_validate_trigger
   before insert or update on public.matches
   for each row execute function public.validate_match();
@@ -474,6 +483,15 @@ begin
     if v_team_count <> 6 then
       raise exception 'Servono esattamente 6 squadre per iniziare il girone (trovate %)', v_team_count;
     end if;
+
+    -- girone all'italiana: ogni squadra affronta tutte le altre una volta
+    -- (6 su 2 = 15 partite), generate qui invece che a mano dallo staff.
+    insert into public.matches (tournament_id, phase, home_team_id, away_team_id)
+    select p_tournament, 'group', t1.id, t2.id
+    from public.teams t1
+    join public.teams t2 on t2.tournament_id = t1.tournament_id and t2.id > t1.id
+    where t1.tournament_id = p_tournament;
+
     update public.tournaments set phase = 'group' where id = p_tournament;
 
   elsif v_phase = 'group' then
@@ -596,6 +614,7 @@ alter table public.players enable row level security;
 alter table public.matches enable row level security;
 
 -- profiles: sé stesso o membri di un torneo condiviso; aggiornabile solo da sé stesso
+drop policy if exists profiles_select on public.profiles;
 create policy profiles_select on public.profiles for select
   using (
     id = auth.uid()
@@ -605,13 +624,16 @@ create policy profiles_select on public.profiles for select
       where m1.user_id = auth.uid() and m2.user_id = profiles.id
     )
   );
+drop policy if exists profiles_update on public.profiles;
 create policy profiles_update on public.profiles for update
   using (id = auth.uid()) with check (id = auth.uid());
 
 -- tournaments: leggibile dai membri (i codici sono protetti a livello di colonna, vedi sotto);
 -- l'unico UPDATE diretto concesso è per l'Host (es. rinominare il torneo)
+drop policy if exists tournaments_select on public.tournaments;
 create policy tournaments_select on public.tournaments for select
   using (public.is_member(id));
+drop policy if exists tournaments_update on public.tournaments;
 create policy tournaments_update on public.tournaments for update
   using (public.my_role(id) = 'host') with check (public.my_role(id) = 'host');
 
@@ -622,25 +644,32 @@ grant select (id, name, host_id, phase, created_at) on public.tournaments to aut
 
 -- tournament_members: sola lettura diretta. Ogni scrittura (iscrizione, ruoli,
 -- espulsione, ban) passa dalle RPC di sezione 4, che applicano can_manage().
+drop policy if exists tournament_members_select on public.tournament_members;
 create policy tournament_members_select on public.tournament_members for select
   using (public.is_member(tournament_id));
 
 -- teams / players / matches: leggibili da ogni membro, scrivibili da Host/Admin
 -- finché il torneo non è concluso
+drop policy if exists teams_select on public.teams;
 create policy teams_select on public.teams for select
   using (public.is_member(tournament_id));
+drop policy if exists teams_write on public.teams;
 create policy teams_write on public.teams for all
   using (public.is_staff(tournament_id) and public.is_open(tournament_id))
   with check (public.is_staff(tournament_id) and public.is_open(tournament_id));
 
+drop policy if exists players_select on public.players;
 create policy players_select on public.players for select
   using (public.is_member(tournament_id));
+drop policy if exists players_write on public.players;
 create policy players_write on public.players for all
   using (public.is_staff(tournament_id) and public.is_open(tournament_id))
   with check (public.is_staff(tournament_id) and public.is_open(tournament_id));
 
+drop policy if exists matches_select on public.matches;
 create policy matches_select on public.matches for select
   using (public.is_member(tournament_id));
+drop policy if exists matches_write on public.matches;
 create policy matches_write on public.matches for all
   using (public.is_staff(tournament_id) and public.is_open(tournament_id))
   with check (public.is_staff(tournament_id) and public.is_open(tournament_id));
@@ -649,5 +678,16 @@ create policy matches_write on public.matches for all
 -- 6. REALTIME
 -- -----------------------------------------------------------------------------
 
-alter publication supabase_realtime add table
-  public.tournament_members, public.teams, public.players, public.matches, public.tournaments;
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['tournament_members', 'teams', 'players', 'matches', 'tournaments'] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $$;

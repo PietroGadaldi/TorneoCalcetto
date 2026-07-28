@@ -20,7 +20,7 @@ Decisioni chiave, tutte rispecchiate nello schema e nel codice:
 
 - Pareggio nelle fasi a eliminazione diretta → l'Admin sceglie a mano il vincitore
 - Rose → giocatori registrati **più** giocatori "ospite" (solo nome, senza account)
-- Calendario del girone → creato manualmente dagli staff (unicità di coppia imposta dal DB)
+- Calendario del girone → generato automaticamente da `close_phase()` all'avvio del girone (round robin completo, 15 partite per 6 squadre; unicità di coppia imposta dal DB)
 - Tabellone play-off/semifinali/finali → slot pre-calcolati e precompilati da `close_phase()` secondo il regolamento
 - Avanzamento di fase → manuale ("Chiudi fase" in Panoramica), con verifiche bloccanti lato server
 - Stack → JavaScript (no TypeScript), React Router, CSS scritto a mano (niente Tailwind: si è mantenuto e ampliato il design system già in `index.css`), Supabase (Auth + Postgres + RLS + Realtime)

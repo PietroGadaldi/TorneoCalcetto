@@ -1084,172 +1084,338 @@ select {
    PARTITE E RISULTATI
    ========================================================================== */
 
+/* Le 15 partite del girone (autogenerate: ogni squadra affronta tutte le
+   altre) stanno in una griglia di tessere compatte — 5 colonne fisse da
+   desktop, meno su schermi medi, una sola su mobile. */
 .match-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 900px) {
+  .match-list {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .match-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .match-row {
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.15s ease;
 }
 
-.match-row:last-child {
-  border-bottom: none;
+.match-row:hover {
+  border-color: var(--panel-border-soft);
 }
 
-/* Desktop: casa – punteggio – trasferta su una riga sola.
-   Le due colonne dei nomi sono 1fr, così restano simmetriche
-   qualunque sia la lunghezza dei nomi delle squadre. */
+.match-row.is-played {
+  border-color: rgba(224, 172, 72, 0.22);
+  background: rgba(224, 172, 72, 0.05);
+}
+
+/* Ogni tessera è compatta: nome squadra + punteggio su due righe, con la
+   conferma (solo staff) centrata sotto. Posizioni esplicite in griglia
+   perché nel markup i due input sono adiacenti. */
 .score-form {
   display: grid;
-  /* il bottone (solo per lo staff) finisce in una sesta colonna implicita,
-     così la vista in sola lettura non si porta dietro una traccia vuota */
-  grid-template-columns: 1fr auto auto auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 4px 8px;
+  font-size: 12.5px;
 }
 
 .score-team {
+  grid-row: 1;
+  grid-column: 1;
   min-width: 0;
   color: var(--text-h);
   font-weight: 600;
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
 .score-team-away {
-  text-align: right;
+  grid-row: 2;
+  grid-column: 1;
+  text-align: left;
 }
 
 .score-sep {
-  color: var(--text-dim);
+  display: none;
+}
+
+.score-input {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.score-input-away {
+  grid-row: 2;
+  grid-column: 2;
 }
 
 input.score-input {
-  width: 52px;
+  width: 38px;
   font: inherit;
   text-align: center;
   color: var(--text-h);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--panel-border-soft);
   border-radius: 8px;
-  padding: 6px 4px;
+  padding: 4px 3px;
 }
 
 strong.score-input {
   color: var(--gold);
-  min-width: 24px;
+  min-width: 20px;
   text-align: center;
 }
 
-/* Mobile: due righe "squadra → punteggio", con il bottone a piena larghezza.
-   L'ordine visivo va riordinato perché nel markup i due input sono adiacenti. */
-@media (max-width: 640px) {
-  .score-form {
-    grid-template-columns: 1fr auto;
-    gap: 10px 12px;
-  }
-  .score-sep {
-    display: none;
-  }
-  .score-team {
-    order: 1;
-  }
-  .score-input {
-    order: 2;
-  }
-  .score-team-away {
-    order: 3;
-    text-align: left;
-  }
-  .score-input-away {
-    order: 4;
-  }
-  .score-submit {
-    order: 5;
-    grid-column: 1 / -1;
-    justify-self: stretch;
-  }
+/* conferma compatta: sola icona, attiva solo quando c'è qualcosa da salvare */
+.score-submit {
+  grid-row: 3;
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin-top: 2px;
+  padding: 5px;
+  min-width: 30px;
+  border-radius: 8px;
 }
 
 /* ==========================================================================
    TABELLONE KO
    ========================================================================== */
 
-.bracket-grid {
+/* Il tabellone è un grafo: le squadre sono nodi (pastiglie con il pallino),
+   gli archi in SVG — misurati dal DOM in Bracket.jsx — dicono chi gioca contro
+   chi e dove finisce chi passa il turno. */
+
+.bracket-graph {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 3vw, 34px);
+  padding: clamp(18px, 4vw, 28px);
 }
 
-.bracket-column {
+.bracket-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.bracket-edge {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke: rgba(243, 246, 238, 0.18);
+}
+
+.bracket-edge-feed {
+  stroke-dasharray: 5 8;
+  stroke: rgba(243, 246, 238, 0.16);
+}
+
+.bracket-edge.is-live {
+  stroke: rgba(224, 172, 72, 0.7);
+  stroke-dasharray: none;
+}
+
+.bracket-round {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: clamp(22px, 5vw, 40px);
 }
 
-.bracket-column h3 {
-  font-size: 14px;
+.bracket-round-title {
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   color: var(--text-dim);
   text-align: center;
 }
 
-.bracket-card {
-  padding: 16px;
+.bracket-tie {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
-.bracket-card-empty {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 110px;
-}
-
-.bracket-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.bracket-row {
+/* nodo = squadra */
+.bracket-node {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
-  font-size: 14px;
-}
-
-.bracket-row span {
-  color: var(--text-h);
-  font-weight: 600;
   min-width: 0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  border: 1px solid var(--panel-border-soft);
+  background: linear-gradient(180deg, rgba(28, 86, 54, 0.85) 0%, rgba(6, 26, 16, 0.95) 100%);
+  box-shadow: var(--shadow);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.bracket-node-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(243, 246, 238, 0.4);
+  box-shadow: 0 0 0 3px rgba(243, 246, 238, 0.07);
+}
+
+.bracket-node-name {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--text-h);
   overflow-wrap: anywhere;
 }
 
-.bracket-row input {
+.bracket-node-seed {
   flex-shrink: 0;
-  width: 56px;
-  font: inherit;
-  text-align: center;
-  color: var(--text-h);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--panel-border-soft);
-  border-radius: 8px;
-  padding: 6px 4px;
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--gold);
 }
 
-.bracket-row strong {
+.bracket-node.is-pending .bracket-node-name {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+.bracket-node.is-winner {
+  border-color: rgba(224, 172, 72, 0.55);
+  box-shadow: 0 4px 18px rgba(224, 172, 72, 0.22);
+}
+
+.bracket-node.is-winner .bracket-node-dot {
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(224, 172, 72, 0.18);
+}
+
+.bracket-node.is-out {
+  opacity: 0.45;
+}
+
+/* pastiglia al centro dell'arco: punteggio o "vs", cliccabile per lo staff */
+.bracket-chip {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  border: 1px solid var(--panel-border-soft);
+  background: var(--pitch-deep);
+}
+
+button.bracket-chip {
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+
+button.bracket-chip:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.4);
+}
+
+button.bracket-chip:active {
+  transform: translateY(0);
+}
+
+button.bracket-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(224, 172, 72, 0.28);
+}
+
+.bracket-chip.is-played {
   color: var(--gold);
+  border-color: rgba(224, 172, 72, 0.45);
+}
+
+.bracket-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.bracket-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bracket-legend i {
+  width: 26px;
+  border-top: 2px solid rgba(243, 246, 238, 0.22);
+}
+
+.bracket-legend i.dashed {
+  border-top-style: dashed;
+}
+
+.bracket-legend i.is-live {
+  border-color: rgba(224, 172, 72, 0.7);
+}
+
+.bracket-editor-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.bracket-editor-rows .field input {
+  text-align: center;
+}
+
+/* sotto i 760px le tre colonne si impilano: gli archi vengono ricalcolati
+   dal componente e diventano verticali senza altre regole */
+@media (max-width: 760px) {
+  .bracket-graph {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
 }
 
 .podium {
@@ -1340,7 +1506,7 @@ strong.score-input {
   .field select,
   select,
   .score-form input,
-  .bracket-row input {
+  .bracket-editor-rows input {
     font-size: 16px;
   }
 

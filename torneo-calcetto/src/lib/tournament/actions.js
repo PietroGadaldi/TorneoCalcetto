@@ -79,21 +79,6 @@ export function assignPlayerToTeam(playerId, teamId) {
   return call(supabase.from('players').update({ team_id: teamId }).eq('id', playerId))
 }
 
-export function createMatch(tournamentId, homeTeamId, awayTeamId) {
-  return call(
-    supabase
-      .from('matches')
-      .insert({
-        tournament_id: tournamentId,
-        phase: 'group',
-        home_team_id: homeTeamId,
-        away_team_id: awayTeamId,
-      })
-      .select()
-      .single(),
-  )
-}
-
 export function recordMatchResult(matchId, homeGoals, awayGoals, winnerTeamId = null) {
   return call(
     supabase

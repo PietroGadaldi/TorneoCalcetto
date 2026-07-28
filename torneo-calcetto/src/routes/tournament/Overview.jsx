@@ -16,6 +16,9 @@ const PHASE_LABELS = {
   completed: 'Concluso',
 }
 
+// fasi in cui l'avanzamento è automatico (vedi TournamentContext)
+const AUTO_PHASES = ['playoff', 'semifinal', 'final']
+
 const NEXT_PHASE_ACTION = {
   setup: 'Avvia il girone',
   group: 'Chiudi il girone e genera il tabellone',
@@ -125,12 +128,16 @@ export default function Overview() {
               <div>
                 <h3>Avanzamento fase</h3>
                 <p className="text-dim">
-                  Verifica lato server che tutto sia pronto prima di passare alla fase successiva.
+                  {AUTO_PHASES.includes(tournament.phase)
+                    ? 'Dopo il girone il tabellone avanza da solo appena i risultati del turno sono registrati: questo pulsante serve solo come ripiego.'
+                    : 'Verifica lato server che tutto sia pronto prima di passare alla fase successiva.'}
                 </p>
               </div>
               <button
                 type="button"
-                className="btn btn-primary btn-sm"
+                className={`btn btn-sm ${
+                  AUTO_PHASES.includes(tournament.phase) ? 'btn-secondary' : 'btn-primary'
+                }`}
                 onClick={() => setConfirmClose(true)}
               >
                 {NEXT_PHASE_ACTION[tournament.phase]}

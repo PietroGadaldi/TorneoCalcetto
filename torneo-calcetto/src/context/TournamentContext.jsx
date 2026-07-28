@@ -1,10 +1,16 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { closePhase } from '../lib/tournament/actions'
+import { isStaff } from '../lib/tournament/permissions'
 import { useAuth } from './AuthContext'
 
 const TournamentContext = createContext(null)
 
 const EMPTY = { tournament: null, members: [], teams: [], players: [], matches: [] }
+
+// Dopo il girone il torneo prosegue da solo: le fasi KO hanno sempre due
+// partite per turno e non richiedono decisioni umane oltre al risultato.
+const AUTO_PHASES = ['playoff', 'semifinal', 'final']
 
 export function TournamentProvider({ tournamentId, children }) {
   const { user } = useAuth()
@@ -87,6 +93,30 @@ export function TournamentProvider({ tournamentId, children }) {
 
   const myMembership = state.members.find((m) => m.user_id === user?.id) ?? null
   const myRole = myMembership?.status === 'active' ? myMembership.role : null
+
+  // Avanzamento automatico delle fasi a eliminazione diretta: appena i due
+  // match del turno hanno un vincitore, il client dello staff chiude la fase
+  // (close_phase resta comunque l'unica autorità: rivalida tutto lato server).
+  // Il ref evita di richiamarla più volte per la stessa fase, anche in caso di
+  // errore — resta il pulsante manuale in Panoramica come ripiego.
+  const autoClosedPhase = useRef(null)
+  useEffect(() => {
+    const t = state.tournament
+    if (!t || !isStaff(myRole)) return
+    if (!AUTO_PHASES.includes(t.phase)) return
+    if (autoClosedPhase.current === t.phase) return
+
+    const phaseMatches = state.matches.filter((m) => m.phase === t.phase)
+    if (phaseMatches.length < 2) return
+    if (phaseMatches.some((m) => m.status !== 'played' || !m.winner_team_id)) return
+
+    autoClosedPhase.current = t.phase
+    closePhase(t.id)
+      .then(fetchAll)
+      .catch((err) => {
+        console.warn('Avanzamento automatico non riuscito:', err.message)
+      })
+  }, [state.tournament, state.matches, myRole, fetchAll])
 
   const value = {
     ...state,
