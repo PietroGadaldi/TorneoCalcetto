@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Torneo Calcetto">
+  <title>Torneo Calcetto</title>
+  <defs>
+    <radialGradient id="pitch" cx="50%" cy="-10%" r="120%">
+      <stop offset="0%" stop-color="#1f7a44" />
+      <stop offset="38%" stop-color="#14432a" />
+      <stop offset="72%" stop-color="#0d3320" />
+      <stop offset="100%" stop-color="#061c11" />
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f2c877" />
+      <stop offset="55%" stop-color="#e0ac48" />
+      <stop offset="100%" stop-color="#a9720f" />
+    </linearGradient>
+    <linearGradient id="leather" x1="0.25" y1="0" x2="0.75" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="60%" stop-color="#f3f6ee" />
+      <stop offset="100%" stop-color="#d8dece" />
+    </linearGradient>
+    <radialGradient id="shine" cx="32%" cy="26%" r="72%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55" />
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="shade" cx="76%" cy="82%" r="66%">
+      <stop offset="0%" stop-color="#061c11" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#061c11" stop-opacity="0" />
+    </radialGradient>
+    <clipPath id="ballClip">
+      <circle cx="256" cy="256" r="100" />
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#pitch)" />
+
+  <g transform="rotate(-12 256 256)" fill="none" stroke="#f3f6ee" stroke-opacity="0.13" stroke-width="12">
+    <path d="M-40 256H552" />
+    <circle cx="256" cy="256" r="212" />
+  </g>
+
+  <circle cx="256" cy="256" r="140" fill="none" stroke="url(#ring)" stroke-width="13" />
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#061c11" stroke-opacity="0.35" stroke-width="2" />
+
+  <g transform="rotate(-12 256 256)">
+    <circle cx="256" cy="256" r="100" fill="url(#leather)" />
+    <g clip-path="url(#ballClip)">
+      <path
+        fill="#061c11"
+        d="M256 218 288.6 236.7V274.2L256 292.9 223.4 274.2V236.7Z
+           M345 220 377.2 238.4V273.8L345 292.2 312.8 273.8V238.4Z
+           M300 296 332.2 314.4V349.8L300 368.2 267.8 349.8V314.4Z
+           M212 296 244.2 314.4V349.8L212 368.2 179.8 349.8V314.4Z
+           M167 220 199.2 238.4V273.8L167 292.2 134.8 273.8V238.4Z
+           M212 148 244.2 166.4V201.8L212 220.2 179.8 201.8V166.4Z
+           M300 148 332.2 166.4V201.8L300 220.2 267.8 201.8V166.4Z"
+      />
+      <circle cx="256" cy="256" r="100" fill="url(#shade)" />
+      <circle cx="256" cy="256" r="100" fill="url(#shine)" />
+    </g>
+    <circle cx="256" cy="256" r="100" fill="none" stroke="#b9c0ad" stroke-width="3" />
+  </g>
+</svg>
