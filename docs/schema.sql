@@ -62,10 +62,15 @@ create table if not exists public.players (
   member_id uuid null references public.tournament_members (id) on delete cascade,
   guest_name text null,
   team_id uuid null references public.teams (id) on delete set null,
+  goals int not null default 0 check (goals >= 0),
   created_at timestamptz not null default now(),
   check (num_nonnulls(member_id, guest_name) = 1),
   unique (tournament_id, member_id)
 );
+-- Rilancio su un database già provisionato prima dell'introduzione dei
+-- Marcatori: aggiunge la colonna solo se manca.
+alter table public.players add column if not exists goals int not null default 0 check (goals >= 0);
+
 create index if not exists players_tournament_idx on public.players (tournament_id);
 create index if not exists players_team_idx on public.players (team_id);
 

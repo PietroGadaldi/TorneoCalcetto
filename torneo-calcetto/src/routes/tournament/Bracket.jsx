@@ -1,9 +1,9 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { TrophyIcon } from '../../components/icons'
+import { TrophyIcon, UndoIcon } from '../../components/icons'
 import Alert from '../../components/ui/Alert'
 import { useTournament } from '../../context/TournamentContext'
 import { matchLoser, matchWinner, SLOTS } from '../../lib/tournament/bracket'
-import { recordMatchResult } from '../../lib/tournament/actions'
+import { recordMatchResult, resetMatchResult } from '../../lib/tournament/actions'
 import { isStaff } from '../../lib/tournament/permissions'
 
 // Il tabellone è disegnato come un grafo: ogni squadra è un nodo, ogni
@@ -57,7 +57,7 @@ function TeamNode({ nodeRef, label, pending, seed, state }) {
   )
 }
 
-function ScoreEditor({ match, label, teamName, busy, onSave, onClose }) {
+function ScoreEditor({ match, label, teamName, busy, onSave, onReset, onClose }) {
   const [home, setHome] = useState(match.home_goals ?? '')
   const [away, setAway] = useState(match.away_goals ?? '')
   const [winner, setWinner] = useState(match.winner_team_id ?? '')
@@ -109,6 +109,16 @@ function ScoreEditor({ match, label, teamName, busy, onSave, onClose }) {
           </label>
         )}
         <div className="modal-actions">
+          {match.status === 'played' && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-danger-text modal-actions-reset"
+              disabled={busy}
+              onClick={() => onReset(match.id)}
+            >
+              <UndoIcon size={15} /> Segna come da giocare
+            </button>
+          )}
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             Annulla
           </button>
@@ -209,6 +219,20 @@ export default function Bracket() {
     setError(null)
     try {
       await recordMatchResult(matchId, home, away, winnerTeamId)
+      await refresh()
+      setEditingSlot(null)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleReset(matchId) {
+    setBusy(true)
+    setError(null)
+    try {
+      await resetMatchResult(matchId)
       await refresh()
       setEditingSlot(null)
     } catch (err) {
@@ -335,7 +359,7 @@ export default function Bracket() {
         <span>
           <i className="is-live" aria-hidden="true" /> accoppiamento definito
         </span>
-        <span>
+        <span className="bracket-legend-feed">
           <i className="dashed" aria-hidden="true" /> chi passa il turno finisce qui
         </span>
       </div>
@@ -348,6 +372,7 @@ export default function Bracket() {
           teamName={teamName}
           busy={busy}
           onSave={handleSave}
+          onReset={handleReset}
           onClose={() => setEditingSlot(null)}
         />
       )}

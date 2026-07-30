@@ -105,10 +105,9 @@ export default function Landing() {
       <section className="section">
         <div className="section-head">
           <h2>
-            <TrophyIcon
-              size={20}
-              style={{ verticalAlign: '-3px', marginRight: 8, color: 'var(--gold)' }}
-            />
+            <span className="head-icon">
+              <TrophyIcon size={20} />
+            </span>
             Classifica del girone
           </h2>
           <p>Le prime due si qualificano direttamente alle semifinali.</p>

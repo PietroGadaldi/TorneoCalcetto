@@ -9,6 +9,7 @@ import Bracket from './routes/tournament/Bracket'
 import Lobby from './routes/tournament/Lobby'
 import Matches from './routes/tournament/Matches'
 import Overview from './routes/tournament/Overview'
+import Scorers from './routes/tournament/Scorers'
 import Standings from './routes/tournament/Standings'
 import Teams from './routes/tournament/Teams'
 import TournamentLayout from './routes/tournament/TournamentLayout'
@@ -61,6 +62,7 @@ function App() {
         <Route path="teams" element={<Teams />} />
         <Route path="matches" element={<Matches />} />
         <Route path="standings" element={<Standings />} />
+        <Route path="scorers" element={<Scorers />} />
         <Route path="bracket" element={<Bracket />} />
       </Route>
     </Routes>

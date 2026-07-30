@@ -24,3 +24,7 @@ export function canPromoteToAdmin(myRole) {
 export function isStaff(myRole) {
   return myRole === 'host' || myRole === 'admin'
 }
+
+export function isHost(myRole) {
+  return myRole === 'host'
+}

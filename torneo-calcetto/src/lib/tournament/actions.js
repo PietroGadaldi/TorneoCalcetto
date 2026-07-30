@@ -65,6 +65,10 @@ export function createTeam(tournamentId, name) {
   )
 }
 
+export function renameTeam(teamId, name) {
+  return call(supabase.from('teams').update({ name }).eq('id', teamId))
+}
+
 export function addGuestPlayer(tournamentId, guestName) {
   return call(
     supabase
@@ -75,8 +79,20 @@ export function addGuestPlayer(tournamentId, guestName) {
   )
 }
 
+export function renameGuestPlayer(playerId, guestName) {
+  return call(supabase.from('players').update({ guest_name: guestName }).eq('id', playerId))
+}
+
 export function assignPlayerToTeam(playerId, teamId) {
   return call(supabase.from('players').update({ team_id: teamId }).eq('id', playerId))
+}
+
+export function setPlayerGoals(playerId, goals) {
+  return call(supabase.from('players').update({ goals }).eq('id', playerId))
+}
+
+export function renameTournament(tournamentId, name) {
+  return call(supabase.from('tournaments').update({ name }).eq('id', tournamentId))
 }
 
 export function recordMatchResult(matchId, homeGoals, awayGoals, winnerTeamId = null) {
@@ -91,4 +107,8 @@ export function recordMatchResult(matchId, homeGoals, awayGoals, winnerTeamId = 
       })
       .eq('id', matchId),
   )
+}
+
+export function resetMatchResult(matchId) {
+  return call(supabase.from('matches').update({ status: 'scheduled' }).eq('id', matchId))
 }

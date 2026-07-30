@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import Alert from '../../components/ui/Alert'
+import EditableText from '../../components/ui/EditableText'
 import { useTournament } from '../../context/TournamentContext'
-import { addGuestPlayer, assignPlayerToTeam, createTeam } from '../../lib/tournament/actions'
+import {
+  addGuestPlayer,
+  assignPlayerToTeam,
+  createTeam,
+  renameGuestPlayer,
+  renameTeam,
+} from '../../lib/tournament/actions'
 import { isStaff } from '../../lib/tournament/permissions'
 
 function playerName(player) {
@@ -12,6 +19,7 @@ export default function Teams() {
   const { teams, players, myRole, refresh, tournament } = useTournament()
   const staff = isStaff(myRole)
   const canEdit = staff && tournament.phase === 'setup'
+  const canRename = staff && tournament.phase !== 'completed'
 
   const [teamName, setTeamName] = useState('')
   const [guestName, setGuestName] = useState('')
@@ -108,7 +116,16 @@ export default function Teams() {
           <ul className="roster-list">
             {lobbyPlayers.map((p) => (
               <li key={p.id}>
-                <span>{playerName(p)}</span>
+                {p.guest_name != null ? (
+                  <EditableText
+                    value={playerName(p)}
+                    onSave={(name) => run(() => renameGuestPlayer(p.id, name))}
+                    disabled={!canRename}
+                    ariaLabel="Rinomina ospite"
+                  />
+                ) : (
+                  <span>{playerName(p)}</span>
+                )}
                 {canEdit && teams.length > 0 && (
                   <select
                     defaultValue=""
@@ -133,11 +150,26 @@ export default function Teams() {
 
         {teams.map((team) => (
           <div className="panel roster-card" key={team.id}>
-            <h3>{team.name}</h3>
+            <EditableText
+              value={team.name}
+              onSave={(name) => run(() => renameTeam(team.id, name))}
+              disabled={!canRename}
+              ariaLabel="Rinomina squadra"
+              as="h3"
+            />
             <ul className="roster-list">
               {(rosterByTeam.get(team.id) ?? []).map((p) => (
                 <li key={p.id}>
-                  <span>{playerName(p)}</span>
+                  {p.guest_name != null ? (
+                    <EditableText
+                      value={playerName(p)}
+                      onSave={(name) => run(() => renameGuestPlayer(p.id, name))}
+                      disabled={!canRename}
+                      ariaLabel="Rinomina ospite"
+                    />
+                  ) : (
+                    <span>{playerName(p)}</span>
+                  )}
                   {canEdit && (
                     <button
                       type="button"

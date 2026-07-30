@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { CheckIcon } from '../../components/icons'
+import { CheckIcon, UndoIcon } from '../../components/icons'
 import Alert from '../../components/ui/Alert'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import { useTournament } from '../../context/TournamentContext'
-import { recordMatchResult } from '../../lib/tournament/actions'
+import { recordMatchResult, resetMatchResult } from '../../lib/tournament/actions'
 import { isStaff } from '../../lib/tournament/permissions'
 import { GROUP_MATCH_COUNT } from '../../lib/tournament/standings'
 
-function ResultForm({ match, teamName, onSave, busy }) {
+function ResultForm({ match, teamName, onSave, onReset, busy }) {
   const [home, setHome] = useState(match.home_goals ?? '')
   const [away, setAway] = useState(match.away_goals ?? '')
 
@@ -33,9 +34,6 @@ function ResultForm({ match, teamName, onSave, busy }) {
         value={home}
         onChange={(e) => setHome(e.target.value)}
       />
-      <span className="score-sep" aria-hidden="true">
-        –
-      </span>
       <input
         className="score-input score-input-away"
         type="number"
@@ -45,14 +43,29 @@ function ResultForm({ match, teamName, onSave, busy }) {
         onChange={(e) => setAway(e.target.value)}
       />
       <span className="score-team score-team-away">{teamName(match.away_team_id)}</span>
-      <button
-        type="submit"
-        className="btn btn-secondary btn-sm score-submit"
-        disabled={busy || !dirty || !complete}
-        title={match.status === 'played' ? 'Aggiorna il risultato' : 'Registra il risultato'}
-      >
-        <CheckIcon size={16} />
-      </button>
+      <div className="score-actions">
+        {match.status === 'played' && (
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm score-action"
+            disabled={busy}
+            title="Annulla il risultato"
+            aria-label="Annulla il risultato"
+            onClick={onReset}
+          >
+            <UndoIcon size={16} />
+          </button>
+        )}
+        <button
+          type="submit"
+          className="btn btn-secondary btn-sm score-action"
+          disabled={busy || !dirty || !complete}
+          title={match.status === 'played' ? 'Aggiorna il risultato' : 'Registra il risultato'}
+          aria-label={match.status === 'played' ? 'Aggiorna il risultato' : 'Registra il risultato'}
+        >
+          <CheckIcon size={16} />
+        </button>
+      </div>
     </form>
   )
 }
@@ -63,6 +76,7 @@ export default function Matches() {
 
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [confirmReset, setConfirmReset] = useState(null)
 
   const groupMatches = matches
     .filter((m) => m.phase === 'group')
@@ -72,12 +86,13 @@ export default function Matches() {
     return teams.find((t) => t.id === id)?.name ?? '—'
   }
 
-  async function run(fn) {
+  async function run(fn, onSuccess) {
     setBusy(true)
     setError(null)
     try {
       await fn()
       await refresh()
+      onSuccess?.()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -110,14 +125,12 @@ export default function Matches() {
                   teamName={teamName}
                   busy={busy}
                   onSave={(h, a) => run(() => recordMatchResult(m.id, h, a))}
+                  onReset={() => setConfirmReset(m.id)}
                 />
               ) : (
                 <div className="score-form">
                   <span className="score-team">{teamName(m.home_team_id)}</span>
                   <strong className="score-input">{m.status === 'played' ? m.home_goals : '–'}</strong>
-                  <span className="score-sep" aria-hidden="true">
-                    –
-                  </span>
                   <strong className="score-input score-input-away">
                     {m.status === 'played' ? m.away_goals : '–'}
                   </strong>
@@ -128,6 +141,16 @@ export default function Matches() {
           ))}
         </ul>
       </div>
+
+      <ConfirmDialog
+        open={confirmReset != null}
+        title="Annullare il risultato?"
+        description="La partita tornerà da giocare, come se il risultato non fosse mai stato inserito."
+        confirmLabel="Annulla risultato"
+        danger
+        onConfirm={() => run(() => resetMatchResult(confirmReset), () => setConfirmReset(null))}
+        onCancel={() => setConfirmReset(null)}
+      />
     </div>
   )
 }

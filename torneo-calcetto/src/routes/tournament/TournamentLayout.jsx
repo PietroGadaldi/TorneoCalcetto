@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useParams } from 'react-router-dom'
-import { BallIcon } from '../../components/icons'
+import BrandMenu from '../../components/ui/BrandMenu'
 import { useAuth } from '../../context/AuthContext'
 import { TournamentProvider, useTournament } from '../../context/TournamentContext'
 import { ROLE_LABELS } from '../../lib/tournament/permissions'
@@ -10,11 +10,12 @@ const TABS = [
   { to: 'teams', label: 'Squadre' },
   { to: 'matches', label: 'Girone' },
   { to: 'standings', label: 'Classifica' },
+  { to: 'scorers', label: 'Marcatori' },
   { to: 'bracket', label: 'Tabellone' },
 ]
 
 function TournamentShell() {
-  const { profile, signOut } = useAuth()
+  const { profile } = useAuth()
   const { tournament, myRole, loading, error } = useTournament()
 
   if (loading) {
@@ -49,17 +50,12 @@ function TournamentShell() {
     <div className="page">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">
-            <BallIcon size={18} />
-          </span>
+          <BrandMenu />
           {tournament.name}
         </div>
         <div className="topbar-user">
           <span className={`badge badge-${myRole}`}>{ROLE_LABELS[myRole]}</span>
           <span>{profile?.username}</span>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={signOut}>
-            Esci
-          </button>
         </div>
       </header>
 

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BallIcon, ChevronRightIcon, KeyIcon, WhistleIcon } from '../components/icons'
+import { ChevronRightIcon, KeyIcon, WhistleIcon } from '../components/icons'
 import Alert from '../components/ui/Alert'
+import BrandMenu from '../components/ui/BrandMenu'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { createTournament, joinTournament } from '../lib/tournament/actions'
@@ -17,7 +18,7 @@ const PHASE_LABELS = {
 }
 
 export default function Dashboard() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile } = useAuth()
   const navigate = useNavigate()
 
   const [memberships, setMemberships] = useState(null)
@@ -81,17 +82,12 @@ export default function Dashboard() {
   return (
     <div className="page">
       <header className="topbar">
-        <Link to="/" className="brand">
-          <span className="brand-mark">
-            <BallIcon size={18} />
-          </span>
+        <div className="brand">
+          <BrandMenu />
           Torneo Calcetto
-        </Link>
+        </div>
         <div className="topbar-user">
           <span>{profile?.username ?? user.email}</span>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={signOut}>
-            Esci
-          </button>
         </div>
       </header>
 

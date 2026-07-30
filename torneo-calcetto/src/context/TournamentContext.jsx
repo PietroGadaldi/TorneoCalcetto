@@ -28,7 +28,7 @@ export function TournamentProvider({ tournamentId, children }) {
       supabase.from('teams').select('id, name, group_seed').eq('tournament_id', tournamentId),
       supabase
         .from('players')
-        .select('id, team_id, guest_name, member:tournament_members(id, user_id, role, profiles(username))')
+        .select('id, team_id, guest_name, goals, member:tournament_members(id, user_id, role, profiles(username))')
         .eq('tournament_id', tournamentId),
       supabase.from('matches').select('*').eq('tournament_id', tournamentId),
     ])

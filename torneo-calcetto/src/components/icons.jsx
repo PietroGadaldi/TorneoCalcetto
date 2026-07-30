@@ -164,6 +164,49 @@ export function EyeIcon({ size = 16, className = '' }) {
   )
 }
 
+export function EyeOffIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Nascondi"
+    >
+      <path d="M3.5 3.5 20.5 20.5" />
+      <path d="M9.9 5.6C10.6 5.5 11.3 5.5 12 5.5c6 0 9.5 6.5 9.5 6.5a13.6 13.6 0 0 1-3.1 3.9M6.4 7.1C4 8.7 2.5 12 2.5 12S6 18.5 12 18.5c1.3 0 2.5-.3 3.6-.8" />
+      <path d="M9.8 10.2a2.6 2.6 0 0 0 3.6 3.7" />
+    </svg>
+  )
+}
+
+export function CopyIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Copia"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M15 9V6.5A1.5 1.5 0 0 0 13.5 5H6a1.5 1.5 0 0 0-1.5 1.5v7.5A1.5 1.5 0 0 0 6 15.5H9" />
+    </svg>
+  )
+}
+
 export function CheckIcon({ size = 18, className = '' }) {
   return (
     <svg
@@ -180,6 +223,131 @@ export function CheckIcon({ size = 18, className = '' }) {
       aria-label="Salva"
     >
       <path d="M4.5 12.5 10 18 19.5 6.5" />
+    </svg>
+  )
+}
+
+export function PencilIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Modifica"
+    >
+      <path d="M4 20l.9-3.9L15.5 5.4a1.5 1.5 0 0 1 2.1 0l1 1a1.5 1.5 0 0 1 0 2.1L8 19.1 4 20Z" />
+      <path d="M14 7 17 10" />
+    </svg>
+  )
+}
+
+export function UndoIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Annulla risultato"
+    >
+      <path d="M6.5 8H15a5 5 0 1 1 0 10h-3" />
+      <path d="M9.5 4.5 6 8l3.5 3.5" />
+    </svg>
+  )
+}
+
+export function PlusIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Aggiungi gol"
+    >
+      <path d="M12 5.5v13M5.5 12h13" />
+    </svg>
+  )
+}
+
+export function MinusIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Togli gol"
+    >
+      <path d="M5.5 12h13" />
+    </svg>
+  )
+}
+
+export function HomeIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Home"
+    >
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v9.5h12V10" />
+      <path d="M10 19.5V14h4v5.5" />
+    </svg>
+  )
+}
+
+export function LogoutIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Esci"
+    >
+      <path d="M14.5 4.5H8A1.5 1.5 0 0 0 6.5 6v12A1.5 1.5 0 0 0 8 19.5h6.5" />
+      <path d="M11 12h9.5M20.5 12 17 8.5M20.5 12 17 15.5" />
     </svg>
   )
 }
