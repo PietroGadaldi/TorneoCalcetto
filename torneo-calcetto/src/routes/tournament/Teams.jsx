@@ -110,8 +110,8 @@ export default function Teams() {
         </div>
       )}
 
-      <div className="teams-grid">
-        <div className="panel roster-card">
+      <div className="teams-layout">
+        <div className="panel roster-card teams-layout-lobby">
           <h3>Lobby ({lobbyPlayers.length})</h3>
           <ul className="roster-list">
             {lobbyPlayers.map((p) => (
@@ -148,46 +148,48 @@ export default function Teams() {
           </ul>
         </div>
 
-        {teams.map((team) => (
-          <div className="panel roster-card" key={team.id}>
-            <EditableText
-              value={team.name}
-              onSave={(name) => run(() => renameTeam(team.id, name))}
-              disabled={!canRename}
-              ariaLabel="Rinomina squadra"
-              as="h3"
-            />
-            <ul className="roster-list">
-              {(rosterByTeam.get(team.id) ?? []).map((p) => (
-                <li key={p.id}>
-                  {p.guest_name != null ? (
-                    <EditableText
-                      value={playerName(p)}
-                      onSave={(name) => run(() => renameGuestPlayer(p.id, name))}
-                      disabled={!canRename}
-                      ariaLabel="Rinomina ospite"
-                    />
-                  ) : (
-                    <span>{playerName(p)}</span>
-                  )}
-                  {canEdit && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm"
-                      disabled={busy}
-                      onClick={() => run(() => assignPlayerToTeam(p.id, null))}
-                    >
-                      Rimuovi
-                    </button>
-                  )}
-                </li>
-              ))}
-              {(rosterByTeam.get(team.id) ?? []).length === 0 && (
-                <li className="text-dim">Nessun giocatore assegnato.</li>
-              )}
-            </ul>
-          </div>
-        ))}
+        <div className="teams-layout-teams">
+          {teams.map((team) => (
+            <div className="panel roster-card" key={team.id}>
+              <EditableText
+                value={team.name}
+                onSave={(name) => run(() => renameTeam(team.id, name))}
+                disabled={!canRename}
+                ariaLabel="Rinomina squadra"
+                as="h3"
+              />
+              <ul className="roster-list">
+                {(rosterByTeam.get(team.id) ?? []).map((p) => (
+                  <li key={p.id}>
+                    {p.guest_name != null ? (
+                      <EditableText
+                        value={playerName(p)}
+                        onSave={(name) => run(() => renameGuestPlayer(p.id, name))}
+                        disabled={!canRename}
+                        ariaLabel="Rinomina ospite"
+                      />
+                    ) : (
+                      <span>{playerName(p)}</span>
+                    )}
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        disabled={busy}
+                        onClick={() => run(() => assignPlayerToTeam(p.id, null))}
+                      >
+                        Rimuovi
+                      </button>
+                    )}
+                  </li>
+                ))}
+                {(rosterByTeam.get(team.id) ?? []).length === 0 && (
+                  <li className="text-dim">Nessun giocatore assegnato.</li>
+                )}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
-import { CopyIcon, EyeIcon, EyeOffIcon, KeyIcon, WhistleIcon } from '../../components/icons'
+import { CopyIcon, EyeIcon, EyeOffIcon, KeyIcon, RefreshIcon, WhistleIcon } from '../../components/icons'
 import Alert from '../../components/ui/Alert'
 import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import EditableText from '../../components/ui/EditableText'
 import { useTournament } from '../../context/TournamentContext'
-import { closePhase, getTournamentCodes, renameTournament } from '../../lib/tournament/actions'
+import {
+  closePhase,
+  getTournamentCodes,
+  regenerateSecretCode,
+  renameTournament,
+} from '../../lib/tournament/actions'
 import { isHost, isStaff } from '../../lib/tournament/permissions'
 import { GROUP_MATCH_COUNT } from '../../lib/tournament/standings'
 
@@ -17,8 +22,9 @@ const PHASE_LABELS = {
   completed: 'Concluso',
 }
 
-// fasi in cui l'avanzamento è automatico (vedi TournamentContext)
-const AUTO_PHASES = ['playoff', 'semifinal', 'final']
+// fasi in cui l'avanzamento è automatico (vedi TournamentContext);
+// la finale ne resta fuori: concludere il torneo è sempre una scelta manuale.
+const AUTO_PHASES = ['playoff', 'semifinal']
 
 const NEXT_PHASE_ACTION = {
   setup: 'Avvia il girone',
@@ -42,6 +48,9 @@ export default function Overview() {
   const [confirmClose, setConfirmClose] = useState(false)
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState(null)
+
+  const [confirmRegenerate, setConfirmRegenerate] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
 
   const [renameError, setRenameError] = useState(null)
 
@@ -86,6 +95,20 @@ export default function Overview() {
       setTimeout(() => setCopiedCode((current) => (current === key ? null : current)), 1800)
     } catch {
       setCodesError('Impossibile copiare il codice.')
+    }
+  }
+
+  async function handleRegenerateSecretCode() {
+    setRegenerating(true)
+    setCodesError(null)
+    try {
+      const newCode = await regenerateSecretCode(tournament.id)
+      setCodes((current) => (current ? { ...current, secret_code: newCode } : current))
+      setConfirmRegenerate(false)
+    } catch (err) {
+      setCodesError(err.message)
+    } finally {
+      setRegenerating(false)
     }
   }
 
@@ -151,6 +174,15 @@ export default function Overview() {
               codes && (
                 <div className="code-chips">
                   <span className="code-chip">
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      onClick={() => setConfirmRegenerate(true)}
+                      aria-label="Rigenera codice segreto"
+                      title="Rigenera codice"
+                    >
+                      <RefreshIcon size={14} />
+                    </button>
                     <WhistleIcon size={14} />
                     <span className="code-chip-value">
                       {secretVisible ? codes.secret_code : '•'.repeat(codes.secret_code.length)}
@@ -223,6 +255,15 @@ export default function Overview() {
           <Alert>{closeError}</Alert>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmRegenerate}
+        title="Rigenerare il codice segreto?"
+        description="Il codice attuale smetterà subito di funzionare: chi non si è ancora iscritto dovrà usare quello nuovo."
+        confirmLabel={regenerating ? 'In corso…' : 'Rigenera'}
+        onConfirm={handleRegenerateSecretCode}
+        onCancel={() => setConfirmRegenerate(false)}
+      />
 
       <ConfirmDialog
         open={confirmClose}

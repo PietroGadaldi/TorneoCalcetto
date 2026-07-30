@@ -26,6 +26,7 @@ export default function Standings() {
         <table>
           <thead>
             <tr>
+              <th>#</th>
               <th>Squadra</th>
               <th>G</th>
               <th>V</th>
@@ -40,6 +41,7 @@ export default function Standings() {
           <tbody>
             {standings.map((row, i) => (
               <tr key={row.team.id} className={i < 2 ? 'qualified' : ''}>
+                <td className="rank">{i + 1}</td>
                 <td className="team">{row.team.name}</td>
                 <td>{row.g}</td>
                 <td>{row.v}</td>
@@ -53,7 +55,7 @@ export default function Standings() {
             ))}
             {standings.length === 0 && (
               <tr>
-                <td colSpan={9} className="text-dim">
+                <td colSpan={10} className="text-dim">
                   Nessuna squadra ancora creata.
                 </td>
               </tr>

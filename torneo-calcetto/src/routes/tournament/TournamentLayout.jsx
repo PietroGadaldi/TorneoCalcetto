@@ -2,6 +2,7 @@ import { NavLink, Outlet, useParams } from 'react-router-dom'
 import BrandMenu from '../../components/ui/BrandMenu'
 import { useAuth } from '../../context/AuthContext'
 import { TournamentProvider, useTournament } from '../../context/TournamentContext'
+import { resetAndGoHome } from '../../lib/recovery'
 import { ROLE_LABELS } from '../../lib/tournament/permissions'
 
 const TABS = [
@@ -26,11 +27,16 @@ function TournamentShell() {
     )
   }
 
+  // Vicolo cieco: il torneo non si carica e da qui non si va da nessuna parte.
+  // Stessa via d'uscita del boundary — si riparte puliti dalla home.
   if (error || !tournament) {
     return (
       <div className="page">
-        <div className="panel empty-state center-pad">
+        <div className="panel empty-state center-pad stack recovery">
           <p>{error ?? 'Torneo non trovato.'}</p>
+          <button type="button" className="btn btn-secondary" onClick={() => resetAndGoHome()}>
+            Torna alla home
+          </button>
         </div>
       </div>
     )

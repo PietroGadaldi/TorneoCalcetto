@@ -371,3 +371,69 @@ export function ChevronRightIcon({ size = 18, className = '' }) {
     </svg>
   )
 }
+
+export function SwapIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Inverti squadre"
+    >
+      <path d="M7 4.5v13.5M7 18 3.8 14.8M7 18l3.2-3.2" />
+      <path d="M17 19.5V6M17 6l3.2 3.2M17 6l-3.2 3.2" />
+    </svg>
+  )
+}
+
+export function RefreshIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      role="img"
+      aria-label="Rigenera"
+    >
+      <path d="M4 12a8 8 0 0 1 13.66-5.66M20 12a8 8 0 0 1-13.66 5.66" />
+      <path d="M17 3v4h-4M7 21v-4h4" />
+    </svg>
+  )
+}
+
+// Presa del trascinamento: due colonne di punti, la convenzione universale per
+// "questo elemento si può spostare". Cerchi pieni invece che tratteggi perché
+// alla dimensione di una tessera i tratti si impastano.
+export function GripIcon({ size = 16, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      role="img"
+      aria-label="Trascina per riordinare"
+    >
+      <circle cx="9" cy="6" r="1.6" />
+      <circle cx="15" cy="6" r="1.6" />
+      <circle cx="9" cy="12" r="1.6" />
+      <circle cx="15" cy="12" r="1.6" />
+      <circle cx="9" cy="18" r="1.6" />
+      <circle cx="15" cy="18" r="1.6" />
+    </svg>
+  )
+}

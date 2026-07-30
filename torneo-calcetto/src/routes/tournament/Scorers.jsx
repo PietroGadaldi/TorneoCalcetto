@@ -36,7 +36,7 @@ export default function Scorers() {
   }
 
   const sorted = players
-    .slice()
+    .filter((p) => p.team_id)
     .sort((a, b) => b.goals - a.goals || playerName(a).localeCompare(playerName(b)))
 
   return (
@@ -62,7 +62,7 @@ export default function Scorers() {
             {sorted.map((p) => (
               <tr key={p.id}>
                 <td className="team">{playerName(p)}</td>
-                <td>{p.team_id ? teamName(p.team_id) : <span className="text-dim">—</span>}</td>
+                <td>{teamName(p.team_id)}</td>
                 <td className="pts">{p.goals}</td>
                 {canEdit && (
                   <td className="row-actions">

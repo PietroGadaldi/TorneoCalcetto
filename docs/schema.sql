@@ -96,6 +96,12 @@ create table if not exists public.matches (
 );
 create index if not exists matches_tournament_idx on public.matches (tournament_id);
 
+-- Ordine di visualizzazione delle tessere del girone, riordinabile a mano dallo
+-- staff (drag and drop in Partite). Fuori dal girone non viene usato: il
+-- tabellone KO è ordinato dagli slot. Aggiunta a parte perché "create table if
+-- not exists" non tocca le tabelle già create dalle versioni precedenti.
+alter table public.matches add column if not exists sort_order int not null default 0;
+
 -- Un solo scontro per coppia di squadre nel girone (15 partite per 6 squadre)
 create unique index if not exists matches_group_pair_uidx
   on public.matches (tournament_id, pair_key) where phase = 'group';
@@ -375,6 +381,32 @@ begin
 end;
 $$;
 
+-- Rigenera il codice segreto (Giocatori), invalidando quello precedente.
+-- Il codice pubblico (Spettatori) resta invariato.
+create or replace function public.regenerate_secret_code(p_tournament uuid)
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_new text;
+begin
+  if not public.is_staff(p_tournament) then
+    raise exception 'Permesso negato';
+  end if;
+
+  loop
+    v_new := public.random_code(24);
+    exit when not exists (select 1 from public.tournaments where secret_code = v_new);
+  end loop;
+
+  update public.tournaments set secret_code = v_new where id = p_tournament;
+
+  return v_new;
+end;
+$$;
+
 -- Promozione/retrocessione. Solo l'Host può nominare un Admin;
 -- il resto segue can_manage().
 create or replace function public.set_member_role(p_tournament uuid, p_target_user uuid, p_new_role text)
@@ -491,8 +523,9 @@ begin
 
     -- girone all'italiana: ogni squadra affronta tutte le altre una volta
     -- (6 su 2 = 15 partite), generate qui invece che a mano dallo staff.
-    insert into public.matches (tournament_id, phase, home_team_id, away_team_id)
-    select p_tournament, 'group', t1.id, t2.id
+    insert into public.matches (tournament_id, phase, home_team_id, away_team_id, sort_order)
+    select p_tournament, 'group', t1.id, t2.id,
+           row_number() over (order by t1.name, t2.name)
     from public.teams t1
     join public.teams t2 on t2.tournament_id = t1.tournament_id and t2.id > t1.id
     where t1.tournament_id = p_tournament;
@@ -696,3 +729,12 @@ begin
     end if;
   end loop;
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- 7. RICARICA DELLA CACHE DELLO SCHEMA DI POSTGREST
+-- -----------------------------------------------------------------------------
+
+-- PostgREST tiene in memoria la forma delle tabelle: finché non la rilegge, una
+-- colonna appena aggiunta non esiste per l'API ("Could not find the 'x' column
+-- of 'y' in the schema cache"). Va lasciato in fondo, dopo ogni DDL.
+notify pgrst, 'reload schema';

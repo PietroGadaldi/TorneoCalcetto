@@ -36,10 +36,19 @@ export default defineConfig({
           },
         ],
       },
+      // Service worker senza cache: serve solo a rendere l'app installabile.
+      // Niente precache della build né cache a runtime — ogni richiesta va in
+      // rete, così non capita mai di girare su un bundle vecchio (e i dati
+      // Supabase restano sempre freschi).
       workbox: {
+        globPatterns: [],
+        navigateFallback: null,
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.hostname.endsWith('.supabase.co'),
+            urlPattern: () => true,
             handler: 'NetworkOnly',
           },
         ],

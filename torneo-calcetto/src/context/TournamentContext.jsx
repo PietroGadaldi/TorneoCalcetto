@@ -8,9 +8,11 @@ const TournamentContext = createContext(null)
 
 const EMPTY = { tournament: null, members: [], teams: [], players: [], matches: [] }
 
-// Dopo il girone il torneo prosegue da solo: le fasi KO hanno sempre due
-// partite per turno e non richiedono decisioni umane oltre al risultato.
-const AUTO_PHASES = ['playoff', 'semifinal', 'final']
+// Dopo il girone il tabellone avanza da solo nelle fasi KO intermedie: hanno
+// sempre due partite per turno e non richiedono decisioni umane oltre al
+// risultato. La finale è esclusa apposta: la conclusione del torneo resta
+// un'azione manuale dello staff (pulsante "Concludi il torneo" in Panoramica).
+const AUTO_PHASES = ['playoff', 'semifinal']
 
 export function TournamentProvider({ tournamentId, children }) {
   const { user } = useAuth()

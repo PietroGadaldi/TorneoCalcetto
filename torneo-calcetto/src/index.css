@@ -496,8 +496,8 @@ p {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  /* 9 colonne (G V N P GF GS DR Pt + nome): sotto questa soglia si accavallano */
-  min-width: 540px;
+  /* 10 colonne (# + G V N P GF GS DR Pt + nome): sotto questa soglia si accavallano */
+  min-width: 580px;
 }
 
 .standings td.team {
@@ -510,9 +510,15 @@ p {
   text-align: center;
 }
 
-.standings th:first-child,
-.standings td:first-child {
+.standings th:nth-child(2),
+.standings td:nth-child(2) {
   text-align: left;
+}
+
+.standings td.rank {
+  color: var(--text-dim);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .standings thead th {
@@ -620,6 +626,11 @@ select {
   border: 1px solid var(--panel-border-soft);
   border-radius: 8px;
   padding: 6px 9px;
+}
+
+select option {
+  color: #111;
+  background: #fff;
 }
 
 .btn-ghost {
@@ -862,6 +873,34 @@ select {
   color: var(--text-dim);
 }
 
+/* Schermata di ripristino (ErrorBoundary e torneo non caricabile): poche
+   righe centrate e un solo pulsante, largo abbastanza da non sembrare
+   un'azione secondaria ma senza occupare tutta la scocca. */
+.recovery {
+  align-items: center;
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.recovery p {
+  margin: 0;
+  max-width: 44ch;
+}
+
+.recovery .btn {
+  align-self: center;
+}
+
+/* il messaggio tecnico serve a chi segnala il problema, non a chi legge:
+   resta leggibile ma sottotono */
+.recovery-detail {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  opacity: 0.55;
+  overflow-wrap: anywhere;
+}
+
 .dashboard-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -952,7 +991,8 @@ select {
   flex-wrap: wrap;
 }
 
-.overview-tool > div {
+.overview-tool > div,
+.overview-tool > .code-chips {
   flex: 1 1 220px;
   min-width: 0;
 }
@@ -983,6 +1023,9 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
+  max-width: 100%;
+  box-sizing: border-box;
   font-family: var(--mono, ui-monospace, Consolas, monospace);
   font-size: 13.5px;
   letter-spacing: 0.04em;
@@ -1001,6 +1044,9 @@ select {
 
 .code-chip-value {
   min-width: 6ch;
+  flex: 1 1 auto;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .code-chip .icon-btn {
@@ -1191,10 +1237,27 @@ select {
   }
 }
 
-.teams-grid {
+.teams-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 2.4fr);
+  align-items: start;
   gap: 14px;
+}
+
+.teams-layout-teams {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 860px) {
+  .teams-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .teams-layout-teams {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 .roster-card {
@@ -1356,6 +1419,7 @@ select {
 }
 
 .match-row {
+  position: relative;
   padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -1460,6 +1524,85 @@ input.score-input::-webkit-outer-spin-button,
   min-width: 32px;
   border-radius: 8px;
   line-height: 0;
+}
+
+/* Riordino delle tessere (solo staff). La presa sta nell'angolo in basso a
+   sinistra, l'unico spazio libero: la riga delle azioni è centrata e i
+   punteggi occupano tutta la colonna destra. */
+.match-list-hint {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+}
+
+.match-grip {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  display: flex;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  line-height: 0;
+  cursor: grab;
+  opacity: 0.55;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  touch-action: none; /* la presa trascina, non fa scorrere la pagina */
+}
+
+.match-grip:hover,
+.match-grip:focus-visible {
+  opacity: 1;
+  color: var(--gold);
+}
+
+/* Inversione di visualizzazione (casa/trasferta invariati nel DB): angolo in
+   basso a destra, l'unico libero anche quando la presa dello staff occupa
+   quello a sinistra. */
+.match-swap {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  line-height: 0;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.match-swap:hover,
+.match-swap:focus-visible {
+  opacity: 1;
+  color: var(--gold);
+}
+
+/* durante il trascinamento nessuna tessera deve catturare il puntatore:
+   elementFromPoint deve poter vedere la tessera sottostante, e il testo non
+   deve selezionarsi sotto il dito */
+.match-list.is-reordering {
+  user-select: none;
+}
+
+.match-list.is-reordering .match-row {
+  cursor: grabbing;
+}
+
+.match-row.is-dragging {
+  border-color: var(--gold);
+  background: rgba(224, 172, 72, 0.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.match-row.is-dragging .match-grip {
+  opacity: 1;
+  color: var(--gold);
+  cursor: grabbing;
 }
 
 /* ==========================================================================

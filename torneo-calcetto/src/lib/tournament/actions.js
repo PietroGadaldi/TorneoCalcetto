@@ -26,6 +26,10 @@ export async function getTournamentCodes(tournamentId) {
   return rows?.[0] ?? null
 }
 
+export function regenerateSecretCode(tournamentId) {
+  return call(supabase.rpc('regenerate_secret_code', { p_tournament: tournamentId }))
+}
+
 export function setMemberRole(tournamentId, targetUserId, newRole) {
   return call(
     supabase.rpc('set_member_role', {
@@ -106,6 +110,17 @@ export function recordMatchResult(matchId, homeGoals, awayGoals, winnerTeamId = 
         winner_team_id: winnerTeamId,
       })
       .eq('id', matchId),
+  )
+}
+
+// Riordino manuale delle tessere del girone: si scrivono solo le partite che
+// hanno davvero cambiato posizione, così un trascinamento breve non genera 15
+// update (e 15 eventi realtime) inutili.
+export function setMatchesOrder(updates) {
+  return Promise.all(
+    updates.map(({ id, sortOrder }) =>
+      call(supabase.from('matches').update({ sort_order: sortOrder }).eq('id', id)),
+    ),
   )
 }
 
