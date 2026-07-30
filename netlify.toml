@@ -1,0 +1,25 @@
+[build]
+  base = "torneo-calcetto"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--include=dev"
+
+# Fallback SPA per React Router (public/_redirects ha comunque la precedenza)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Il service worker della PWA non deve essere messo in cache
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
