@@ -3,9 +3,9 @@
    ========================================================================== */
 :root {
   /* materiali del dominio */
-  --pitch-deep: #061c11;
-  --pitch: #0d3320;
-  --pitch-light: #1f7a44;
+  --pitch-deep: #00113d;
+  --pitch: #002db5;
+  --pitch-light: #2f5fe0;
   --chalk: #f3f6ee;
   --gold: #e0ac48;
   --gold-deep: #a9720f;
@@ -13,11 +13,11 @@
   /* superfici */
   --bg: radial-gradient(
     ellipse 120% 70% at 50% -10%,
-    #14432a 0%,
+    #1446d2 0%,
     var(--pitch) 42%,
     var(--pitch-deep) 100%
   );
-  --panel: rgba(6, 26, 16, 0.88);
+  --panel: rgba(0, 17, 61, 0.88);
   --panel-border: rgba(224, 172, 72, 0.32);
   --panel-border-soft: rgba(224, 172, 72, 0.18);
 
@@ -137,7 +137,7 @@ p {
 }
 
 .btn-secondary {
-  background: linear-gradient(180deg, #1c5636 0%, #123f27 45%, #0b2a1a 100%);
+  background: linear-gradient(180deg, var(--pitch-light) 0%, var(--pitch) 45%, var(--pitch-deep) 100%);
   border-color: rgba(224, 172, 72, 0.3);
   color: var(--chalk);
 }
@@ -546,7 +546,7 @@ p {
   border-radius: 50%;
   background: var(--pitch-light);
   margin-right: 8px;
-  box-shadow: 0 0 8px rgba(31, 122, 68, 0.6);
+  box-shadow: 0 0 8px rgba(47, 95, 224, 0.6);
 }
 
 /* ==========================================================================
@@ -1539,7 +1539,7 @@ input.score-input::-webkit-outer-spin-button,
   border-radius: 999px;
   font-size: 13.5px;
   border: 1px solid var(--panel-border-soft);
-  background: linear-gradient(180deg, rgba(28, 86, 54, 0.85) 0%, rgba(6, 26, 16, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(24, 74, 196, 0.85) 0%, rgba(0, 17, 61, 0.95) 100%);
   box-shadow: var(--shadow);
   transition:
     border-color 0.15s ease,

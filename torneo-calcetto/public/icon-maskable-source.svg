@@ -2,10 +2,10 @@
   <title>Torneo Calcetto</title>
   <defs>
     <radialGradient id="pitch" cx="50%" cy="-10%" r="120%">
-      <stop offset="0%" stop-color="#1f7a44" />
-      <stop offset="38%" stop-color="#14432a" />
-      <stop offset="72%" stop-color="#0d3320" />
-      <stop offset="100%" stop-color="#061c11" />
+      <stop offset="0%" stop-color="#2f5fe0" />
+      <stop offset="38%" stop-color="#1446d2" />
+      <stop offset="72%" stop-color="#002db5" />
+      <stop offset="100%" stop-color="#00113d" />
     </radialGradient>
     <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f2c877" />
@@ -23,8 +23,8 @@
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </radialGradient>
     <radialGradient id="shade" cx="76%" cy="82%" r="66%">
-      <stop offset="0%" stop-color="#061c11" stop-opacity="0.42" />
-      <stop offset="100%" stop-color="#061c11" stop-opacity="0" />
+      <stop offset="0%" stop-color="#00113d" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#00113d" stop-opacity="0" />
     </radialGradient>
     <clipPath id="ballClip">
       <circle cx="256" cy="256" r="100" />
@@ -39,13 +39,13 @@
   </g>
 
   <circle cx="256" cy="256" r="140" fill="none" stroke="url(#ring)" stroke-width="13" />
-  <circle cx="256" cy="256" r="140" fill="none" stroke="#061c11" stroke-opacity="0.35" stroke-width="2" />
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#00113d" stroke-opacity="0.35" stroke-width="2" />
 
   <g transform="rotate(-12 256 256)">
     <circle cx="256" cy="256" r="100" fill="url(#leather)" />
     <g clip-path="url(#ballClip)">
       <path
-        fill="#061c11"
+        fill="#00113d"
         d="M256 218 288.6 236.7V274.2L256 292.9 223.4 274.2V236.7Z
            M345 220 377.2 238.4V273.8L345 292.2 312.8 273.8V238.4Z
            M300 296 332.2 314.4V349.8L300 368.2 267.8 349.8V314.4Z

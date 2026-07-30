@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BallIcon, HomeIcon, LogoutIcon } from '../icons'
 import { useAuth } from '../../context/AuthContext'
+import ConfirmDialog from './ConfirmDialog'
 
 // Icona del pallone in alto a sinistra: apre un menu con le scorciatoie
 // "Torna alla home" (dashboard tornei) e "Esci".
 export default function BrandMenu() {
   const [open, setOpen] = useState(false)
+  const [confirmLogout, setConfirmLogout] = useState(false)
   const rootRef = useRef(null)
   const { signOut } = useAuth()
   const navigate = useNavigate()
@@ -59,7 +61,7 @@ export default function BrandMenu() {
             className="brand-menu-item"
             onClick={() => {
               setOpen(false)
-              signOut()
+              setConfirmLogout(true)
             }}
           >
             <LogoutIcon size={16} />
@@ -67,6 +69,17 @@ export default function BrandMenu() {
           </button>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmLogout}
+        title="Uscire dall'account?"
+        confirmLabel="Esci"
+        danger
+        onCancel={() => setConfirmLogout(false)}
+        onConfirm={() => {
+          setConfirmLogout(false)
+          signOut()
+        }}
+      />
     </div>
   )
 }
